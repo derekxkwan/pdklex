@@ -1,6 +1,6 @@
-#Makefile for pdkm
+#Makefile for pdklex
 
-lib.name = pdkm
+lib.name = pdklex
 
 # headers
 dkrnd := src/dkrnd.c
