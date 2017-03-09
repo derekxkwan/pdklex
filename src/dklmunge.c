@@ -16,10 +16,12 @@ typedef enum{
     REV,
     ROT,
     RPT1,
+    REF,
     EVERYN,
     REVROT,
     RELT,
     DRIP,
+    INS1,
     STREAM,
     INTERL,
     DEINTER,
@@ -179,6 +181,14 @@ static void dklmunge_setmunger(t_dklmunge *x, t_symbol * s)
     {
         x->x_munger = RELT;
     }
+    else if(strcmp(cs, "ins1") == 0)
+    {
+        x->x_munger = INS1;
+    }
+    else if(strcmp(cs, "ref") == 0)
+    {
+        x->x_munger = REF;
+    };
 }
 
 static void dklmunge_eltset(t_atom * src, t_atom * dest)
@@ -241,10 +251,54 @@ static void dklmunge_munger(t_dklmunge *x, t_symbol *s, int argc, t_atom * argv)
         };
     };
 }
+
+static int dklmunge_untilf(int argc, t_atom * argv, t_float f)
+{
+    //returns idx of first instance of f or returns -1 if not found
+    int i, idx = -1;
+    for(i=0;i<argc; i++)
+    {
+        if(argv[i].a_type == A_FLOAT)
+        {
+            if(f == argv[i].a_w.w_float)
+            {
+                idx = i;
+                break;
+            };
+        };
+    };
+    return idx;
+}
+
+static int dklmunge_untilstr(int argc, t_atom * argv, char * cmp)
+{
+    int i, idx = -1;
+    for(i=0; i<argc; i++)
+    {
+        if(argv[i].a_type == A_SYMBOL)
+        {
+            if(strcmp(cmp, argv[i].a_w.w_symbol->s_name) == 0)
+            {
+                idx = i;
+                break;
+            };
+        };
+    };
+    return idx;
+}
+
 static void dklmunge_output(t_dklmunge * x, t_symbol * s, int argc, t_atom * argv)
 {
     if(s) outlet_list(x->x_munged, s, argc, argv);
     else outlet_list(x->x_munged, 0, argc, argv);
+}
+
+static void dklmunge_ref(t_dklmunge *x, int argc, t_atom * argv, t_atom * param)
+{
+    int idx = -1;
+    if(param[0].a_type == A_FLOAT) idx = dklmunge_untilf(argc, argv, param[0].a_w.w_float);
+    else if(param[0].a_type == A_SYMBOL) idx= dklmunge_untilstr(argc, argv, param[0].a_w.w_symbol->s_name);
+    if(idx >= 0) dklmunge_output(x, 0, argc-idx, &argv[idx]);
 }
 
 static void dklmunge_rev(t_dklmunge *x, int argc, t_atom * argv)
@@ -715,7 +769,10 @@ static void dklmunge_router(t_dklmunge * x)
             case RELT:
                          dklmunge_relt(x, mlen, mungee, paramlen, params);
                          break;
-
+            case REF:
+                         if(paramlen) dklmunge_ref(x, mlen, mungee, params);
+                         break;
+                         
             default:
                       break;
 

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "m_pd.h"
 
-#define DKMEM_STACK 128 //stack size
+#define DKMEM_STACK 64 //stack size
 #define DKMEM_MAX 4096 //maximum allocated size
 typedef struct _dkmem{
     t_atom * m_data;

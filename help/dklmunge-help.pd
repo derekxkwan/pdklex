@@ -1,4 +1,4 @@
-#N canvas 893 165 641 720 12;
+#N canvas 891 165 641 720 12;
 #X obj 8 6 cnv 15 500 30 empty empty pdklex 20 12 0 20 -204786 -66577
 0;
 #X obj 8 36 cnv 15 500 30 empty empty dklmunge 20 12 0 20 -204800 -66577
@@ -31,7 +31,7 @@
 #X text 18 343 3) list - munger method and its params;
 #X text 19 393 4) f - turn munging on(1) or off (0);
 #X text 109 500 1) list - munged lists;
-#N canvas 846 259 1156 507 dklmunge-mungers 0;
+#N canvas 844 259 1156 507 dklmunge-mungers 0;
 #X text 4 5 MUNGERS:;
 #X text 5 83 faro - faro shuffle;
 #X text 543 22 rev - reverse list;
@@ -66,7 +66,7 @@ idx rpt times;
 elts;
 #X text 15 186 min - min of all float elts;
 #X text 21 171 max - max of all float elts;
-#X text 12 221 relt - random elt selection \, see:;
+#X text 12 232 relt - random elt selection \, see:;
 #N canvas 743 356 711 576 dklmunge-relt-more 0;
 #X obj 172 41 loadbang;
 #X msg 172 66 1 2 3 4 5 6 7;
@@ -91,7 +91,8 @@ elts;
 #X connect 11 0 13 2;
 #X connect 12 0 13 2;
 #X connect 13 0 14 0;
-#X restore 292 222 pd dklmunge-relt-more;
+#X restore 292 233 pd dklmunge-relt-more;
+#X text 10 205 ref (f/s) - return list starting at given f or s;
 #X restore 282 237 pd dklmunge-mungers;
 #X text 95 361 see pd dklmunge-mungers;
 #X msg 41 118 1 2 3 4 5 6 7;
