@@ -1,4 +1,4 @@
-#N canvas 640 296 641 720 12;
+#N canvas 638 296 641 720 12;
 #X obj 8 6 cnv 15 500 30 empty empty pdklex 20 12 0 20 -204786 -66577
 0;
 #X obj 8 36 cnv 15 500 30 empty empty dklmunge 20 12 0 20 -204800 -66577
@@ -9,7 +9,7 @@
 0;
 #X obj 20 527 cnv 15 500 150 empty empty args 20 12 0 15 -204800 -66577
 0;
-#N canvas 731 375 374 272 META 0;
+#N canvas 729 375 374 272 META 0;
 #X text 3 183 VERSION 0.1;
 #X text 3 201 AUTHOR Derek Kwan;
 #X text 0 110 INLET_3 float;
@@ -19,10 +19,10 @@
 #X text 0 57 INLET_0 bang;
 #X text 0 76 INLET_1 list;
 #X text 1 92 INLET_2 list;
-#X text 2 144 OUTLET_0 float;
 #X text 2 163 LIBRARY pdklex;
 #X text 4 219 RELEASE_DATE 2017;
 #X text 5 238 WEBSITE https://github.com/derekxkwan/pdklex;
+#X text 2 144 OUTLET_0 list float;
 #X restore 34 689 pd META;
 #X text 326 41 list munger;
 #X text 59 557 none for now;

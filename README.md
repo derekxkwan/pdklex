@@ -19,3 +19,6 @@ multipurpose list externals for pure data
     - rpt1 (f=idx, f=rpt, pairs) - takes pairs, repeats idx rpt times
     - sum - adds all float args together
     - prod - multiplies all float args together
+
+- dklgen - list generator
+    - randfu - generates a list of uniformly random floats

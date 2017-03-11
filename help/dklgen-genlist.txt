@@ -1,0 +1,5 @@
+randfu - generates a list of uniformly random floats
+    - 0 args: 1 elt list with number in [0,1)
+    - 1 args: arg0 elt list with numbers in [0,1)
+    - 2 args: arg1 elt list with numbers in [0,arg0)
+    - 3 args: arg2 elt list with number in [arg0, arg1)

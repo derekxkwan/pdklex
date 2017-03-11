@@ -7,9 +7,11 @@ dkrnd := src/dkrnd.c
 dkmem:= src/dkmem.c
 
 dklmunge.class.sources = src/dklmunge.c $(dkmem) $(dkrnd)
+dklgen.class.sources = src/dklgen.c $(dkmem) $(dkrnd)
 
 datafiles =  pdklex-meta.pd \
 	     dklmunge-help.pd \
+	     dklgen-help.pd \
 	     dklmunge-mungerlist.txt \
 			 README.txt \
 			 LICENSE.txt

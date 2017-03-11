@@ -253,6 +253,7 @@ static void dklmunge_munger(t_dklmunge *x, t_symbol *s, int argc, t_atom * argv)
             argc--;
             argv++;
             if(argc) dklmunge_params(x, &s_, argc, argv);
+            else x->x_paramlen = 0;
         };
     };
 }
