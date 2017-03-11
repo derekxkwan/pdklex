@@ -4,6 +4,7 @@ everyn (f=n, f=offset) - output every nth elt with offset
 faro - faro shufflte
 fyshuf - fisher-yates shuffle
 group (f) - output in groups of f prepended by l0,l1,.....
+indexof (f/s) - returns index of given else -1
 max - max of all float elts
 min - min of all float elts
 relt (f list) - random elt selection: 1 arg specifies number (if given), rest specify weights

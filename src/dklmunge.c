@@ -22,6 +22,7 @@ typedef enum{
     RELT,
     DRIP,
     INS1,
+    INDEXOF,
     STREAM,
     INTERL,
     DEINTER,
@@ -188,6 +189,10 @@ static void dklmunge_setmunger(t_dklmunge *x, t_symbol * s)
     else if(strcmp(cs, "ref") == 0)
     {
         x->x_munger = REF;
+    }
+    else if(strcmp(cs, "indexof") == 0)
+    {
+        x->x_munger = INDEXOF;
     };
 }
 
@@ -289,7 +294,7 @@ static int dklmunge_untilstr(int argc, t_atom * argv, char * cmp)
 
 static void dklmunge_output(t_dklmunge * x, t_symbol * s, int argc, t_atom * argv)
 {
-    if(s) outlet_list(x->x_munged, s, argc, argv);
+    if(s) outlet_anything(x->x_munged, s, argc, argv);
     else outlet_list(x->x_munged, 0, argc, argv);
 }
 
@@ -299,6 +304,15 @@ static void dklmunge_ref(t_dklmunge *x, int argc, t_atom * argv, t_atom * param)
     if(param[0].a_type == A_FLOAT) idx = dklmunge_untilf(argc, argv, param[0].a_w.w_float);
     else if(param[0].a_type == A_SYMBOL) idx= dklmunge_untilstr(argc, argv, param[0].a_w.w_symbol->s_name);
     if(idx >= 0) dklmunge_output(x, 0, argc-idx, &argv[idx]);
+}
+
+static void dklmunge_indexof(t_dklmunge *x, int argc, t_atom * argv, t_atom * param)
+{
+     int idx = -1;
+    if(param[0].a_type == A_FLOAT) idx = dklmunge_untilf(argc, argv, param[0].a_w.w_float);
+    else if(param[0].a_type == A_SYMBOL) idx= dklmunge_untilstr(argc, argv, param[0].a_w.w_symbol->s_name);
+    outlet_float(x->x_munged, (t_float) idx);
+    
 }
 
 static void dklmunge_rev(t_dklmunge *x, int argc, t_atom * argv)
@@ -454,16 +468,24 @@ static void dklmunge_group(t_dklmunge *x, int argc, t_atom * argv, t_float f)
             //have to worry about last group
             if(lastgroup)
             {
-                outputnum = (argc - idx) + 1;
+                //outputnum = (argc - idx) + 1;
+                outputnum = argc - idx;
                 lastgroup = 0;
             }
-            else outputnum = group + 1;
+            else
+            {
+            //else outputnum = group + 1;
+                outputnum = group;
+            };
+
+
             groupnum = (int)idx/group;
             sprintf(groupname, "l%d%c", groupnum,0);
 
-            SETSYMBOL(&ret[0], gensym((char *)groupname));
-            dklmunge_listcopy(&argv[idx], outputnum -1, &ret[1], outputnum-1);
-            dklmunge_output(x, 0, outputnum, ret);
+            //SETSYMBOL(&ret[0], gensym((char *)groupname));
+            //dklmunge_listcopy(&argv[idx], outputnum -1, &ret[1], outputnum-1);
+            //dklmunge_output(x, 0, outputnum, ret);
+            dklmunge_output(x, gensym((char *) groupname), outputnum, &argv[idx]);
             idx -= group;
         };
     }
@@ -472,9 +494,10 @@ static void dklmunge_group(t_dklmunge *x, int argc, t_atom * argv, t_float f)
         for(idx=argc-1;idx>= 0; idx--)
         {
             sprintf(groupname, "l%d%c", idx,0); 
-            SETSYMBOL(&ret[0], gensym((char *)groupname));
-            dklmunge_listcopy(&argv[idx], 1, &ret[1], 1);
-            dklmunge_output(x, 0, 2, ret);
+            //SETSYMBOL(&ret[0], gensym((char *)groupname));
+            //dklmunge_listcopy(&argv[idx], 1, &ret[1], 1);
+            //dklmunge_output(x, 0, 2, ret);
+            dklmunge_output(x, gensym((char *) groupname), 1, &argv[idx]);
         };
 
 
@@ -738,6 +761,7 @@ static void dklmunge_router(t_dklmunge * x)
                          {
                             if(params->a_type == A_FLOAT) dklmunge_group(x, mlen, mungee, params->a_w.w_float);
                          };
+                         break;
             case EVERYN:
                          if(paramlen)
                          {
@@ -772,7 +796,10 @@ static void dklmunge_router(t_dklmunge * x)
             case REF:
                          if(paramlen) dklmunge_ref(x, mlen, mungee, params);
                          break;
-                         
+             case INDEXOF:
+                         if(paramlen) dklmunge_indexof(x, mlen, mungee, params);
+                         break;
+                               
             default:
                       break;
 

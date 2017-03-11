@@ -8,6 +8,7 @@ multipurpose list externals for pure data
     - faro - faro shuffle
     - fyshuf - fisher-yates shuffle
     - group (f) - output in groups of f prepended by l0,l1,.....
+    - indexof (f/s) - returns index of given else -1
     - max - max of all float elts
     - min - min of all float elts
     - ref (f/s) - returns sublist starting at given f or s if found
