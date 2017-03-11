@@ -22,3 +22,4 @@ multipurpose list externals for pure data
 
 - dklgen - list generator
     - randfu - generates a list of uniformly random floats
+    - randiu - generates a list of uniformly random ints

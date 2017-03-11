@@ -157,10 +157,11 @@ static int dklgen_numdigits(int num)
     return count;
 }
 
-static void dklgen_randfu(t_dklgen *x, int plen, t_atom * p)
+static void dklgen_randnum(t_dklgen *x, int plen, t_atom * p, int itype, int norpt)
 {
+    //itype = if 1, typecast to int; norpt = if 1, don't allow repeats
     int i,retsz;
-    double rnd, lo, hi,temp, f0, f1, f2;
+    double rnd, lo, hi,temp, f0, f1, f2, range;
 
     //check if args are floats and get them if so
     switch(plen)
@@ -243,11 +244,34 @@ static void dklgen_randfu(t_dklgen *x, int plen, t_atom * p)
     };
 
     t_atom ret[retsz];
-    dkrnd_range(x->x_dkrnd, hi-lo);
+    if(itype)
+    {
+        if(plen < 2)
+        {
+            lo = 0;
+            hi = 2;
+            range = 1.5;
+        }
+        else
+        {
+            lo = (int) lo;
+            hi = (int) hi;
+            range = (int)hi-lo;
+            range -= 0.5; //make sure we don't hit hi of range ever
+        };
+        dkrnd_range(x->x_dkrnd, range);
+    }
+    else
+    {
+        range = hi-lo;
+        dkrnd_range(x->x_dkrnd, range);
+    };
+    
     for(i=0;i< retsz; i++)
     {
         rnd = dkrnd_next(x->x_dkrnd) + lo;
-        SETFLOAT(&ret[i], rnd);
+        if(itype) rnd = (int)rnd;
+        SETFLOAT(&ret[i], (t_float)rnd);
     };  
     dklgen_output(x, 0, retsz, ret);
 }
@@ -259,7 +283,9 @@ static void dklgen_router(t_dklgen * x)
     switch(x->x_gen)
     {
         case NONE: break;
-        case RANDFU: dklgen_randfu(x, paramlen, params);
+        case RANDFU: dklgen_randnum(x, paramlen, params, 0, 0);
+                     break;
+        case RANDIU: dklgen_randnum(x, paramlen, params, 1, 0);
                      break;
                                
         default: break;
