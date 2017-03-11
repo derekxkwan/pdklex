@@ -1,4 +1,4 @@
-#N canvas 1002 199 632 813 12;
+#N canvas 1000 199 632 813 12;
 #X obj 8 6 cnv 15 500 30 empty empty pdklex 20 12 0 20 -204786 -66577
 0;
 #X obj 8 36 cnv 15 500 30 empty empty dklgen 20 12 0 20 -204800 -66577
@@ -32,16 +32,20 @@
 #X text 109 500 1) list - generated lists;
 #X text 22 322 2) list - gen method and its params;
 #X text 102 347 see dklgen-gens;
-#N canvas 634 330 1156 507 dklgen-gens 0;
+#N canvas 632 330 1156 507 dklgen-gens 0;
 #X text 4 5 MUNGERS:;
 #X text 7 25 none - do nothing;
 #X text 3 284 TO COME:;
-#N canvas 980 308 862 452 pdklgen-randfu 0;
+#X text 8 95 randiu - generates a list of uniform random ints.;
+#X text 8 47 randfu - generates a list of uniform random floats;
+#X text 86 74 see pdklgen-randnum subpatch;
+#X text 88 127 see dklgen-randnum subpatch;
+#N canvas 978 308 862 452 dklgen-randnum 0;
 #X obj 110 325 pdklex/dklgen;
-#X msg 198 179 list randfu;
-#X msg 224 219 list randfu 3;
-#X msg 246 252 list randfu 2 3;
-#X msg 250 293 list randfu -1 5 3;
+#X msg 76 64 list randfu;
+#X msg 102 104 list randfu 3;
+#X msg 124 137 list randfu 2 3;
+#X msg 128 178 list randfu -1 5 3;
 #X obj 110 249 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
 -1 -1;
 #X obj 110 350 print;
@@ -50,15 +54,25 @@
 #X text 434 67 2 args: arg1 elt list with numbers in [0 arg0);
 #X text 434 90 3 args: arg2 elt list with numbers in [arg0 \, arg1)
 ;
+#X msg 252 61 list randiu;
+#X msg 300 134 list randiu 5 3;
+#X msg 278 101 list randiu 3;
+#X msg 304 175 list randiu -1 5 3;
+#X text 410 218 NOTE: randiu for 0 and 1 args outputs in range [0 \,
+1];
+#X text 410 237 (since constantly spitting out 0s would be useless)
+;
 #X connect 0 0 6 0;
 #X connect 1 0 0 1;
 #X connect 2 0 0 1;
 #X connect 3 0 0 1;
 #X connect 4 0 0 1;
 #X connect 5 0 0 0;
-#X restore 464 47 pd pdklgen-randfu;
-#X text 8 47 randfu - generates a list of uniform random floats. see
-;
+#X connect 11 0 0 1;
+#X connect 12 0 0 1;
+#X connect 13 0 0 1;
+#X connect 14 0 0 1;
+#X restore 103 6 pd dklgen-randnum;
 #X restore 282 237 pd dklgen-gens;
 #X obj 68 209 pdklex/dklgen;
 #X msg 178 140 list randfu -2 3 20;
