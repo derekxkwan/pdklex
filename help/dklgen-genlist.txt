@@ -5,3 +5,4 @@ randfu - generates a list of uniformly random floats
     - 3 args: arg2 elt list with number in [arg0, arg1)
 randiu - generates a list of uniformly random ints
     - same format as randfu but 0 and 1 args generate in range [0,1]
+rpt1 (f/s, f=rptnum) - repeats given atom rptnum times

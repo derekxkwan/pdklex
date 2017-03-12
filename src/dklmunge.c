@@ -1,9 +1,8 @@
 /* Copyright 2017 - Derek Kwan
  *  * Distributed under GPL v3 */
 
-#include "m_pd.h"
+#include "lutil.h"
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include "dkmem.h"
@@ -196,50 +195,19 @@ static void dklmunge_setmunger(t_dklmunge *x, t_symbol * s)
     };
 }
 
-static void dklmunge_eltset(t_atom * src, t_atom * dest)
-{
-    if(src->a_type == A_FLOAT)
-    {
-        SETFLOAT(dest, src->a_w.w_float);
-    }
-    else if(src->a_type == A_SYMBOL)
-    {
-        SETSYMBOL(dest, src->a_w.w_symbol);
-    };
-}
-
-static void dklmunge_eltswap(t_atom * src, t_atom * dest)
-{
-    t_atom temp;
-    dklmunge_eltset(dest, &temp);
-    dklmunge_eltset(src, dest);
-    dklmunge_eltset(&temp, src);
-}
-
-static void dklmunge_listcopy(t_atom * src, int srcsz, t_atom * dest, int destsz)
-{
-    int loopsz = srcsz < destsz ? srcsz : destsz;
-    int i=0;
-    for(i=0;i<loopsz; i++)
-    {
-        dklmunge_eltset(&src[i],&dest[i]);
-    };
-
-}
-
 
 static void dklmunge_params(t_dklmunge *x, t_symbol *s, int argc, t_atom * argv)
 {
     
     dkmem_alloc(x->x_dkparam, argc);
-    dklmunge_listcopy(argv, argc, x->x_dkparam->m_data, x->x_dkparam->m_allocsz);
+    lutil_listcopy(argv, argc, x->x_dkparam->m_data, x->x_dkparam->m_allocsz);
     x->x_paramlen = argc;
 }
 
 static void dklmunge_mungee(t_dklmunge *x, t_symbol*s, int argc, t_atom * argv)
 {
     dkmem_alloc(x->x_dkmungee, argc);
-    dklmunge_listcopy(argv, argc, x->x_dkmungee->m_data, x->x_dkmungee->m_allocsz);
+    lutil_listcopy(argv, argc, x->x_dkmungee->m_data, x->x_dkmungee->m_allocsz);
     x->x_mungeelen = argc;
 }
 
@@ -258,41 +226,6 @@ static void dklmunge_munger(t_dklmunge *x, t_symbol *s, int argc, t_atom * argv)
     };
 }
 
-static int dklmunge_untilf(int argc, t_atom * argv, t_float f)
-{
-    //returns idx of first instance of f or returns -1 if not found
-    int i, idx = -1;
-    for(i=0;i<argc; i++)
-    {
-        if(argv[i].a_type == A_FLOAT)
-        {
-            if(f == argv[i].a_w.w_float)
-            {
-                idx = i;
-                break;
-            };
-        };
-    };
-    return idx;
-}
-
-static int dklmunge_untilstr(int argc, t_atom * argv, char * cmp)
-{
-    int i, idx = -1;
-    for(i=0; i<argc; i++)
-    {
-        if(argv[i].a_type == A_SYMBOL)
-        {
-            if(strcmp(cmp, argv[i].a_w.w_symbol->s_name) == 0)
-            {
-                idx = i;
-                break;
-            };
-        };
-    };
-    return idx;
-}
-
 static void dklmunge_output(t_dklmunge * x, t_symbol * s, int argc, t_atom * argv)
 {
     if(s) outlet_anything(x->x_munged, s, argc, argv);
@@ -302,16 +235,16 @@ static void dklmunge_output(t_dklmunge * x, t_symbol * s, int argc, t_atom * arg
 static void dklmunge_ref(t_dklmunge *x, int argc, t_atom * argv, t_atom * param)
 {
     int idx = -1;
-    if(param[0].a_type == A_FLOAT) idx = dklmunge_untilf(argc, argv, param[0].a_w.w_float);
-    else if(param[0].a_type == A_SYMBOL) idx= dklmunge_untilstr(argc, argv, param[0].a_w.w_symbol->s_name);
+    if(param[0].a_type == A_FLOAT) idx = lutil_untilf(argc, argv, param[0].a_w.w_float);
+    else if(param[0].a_type == A_SYMBOL) idx= lutil_untilstr(argc, argv, param[0].a_w.w_symbol->s_name);
     if(idx >= 0) dklmunge_output(x, 0, argc-idx, &argv[idx]);
 }
 
 static void dklmunge_indexof(t_dklmunge *x, int argc, t_atom * argv, t_atom * param)
 {
      int idx = -1;
-    if(param[0].a_type == A_FLOAT) idx = dklmunge_untilf(argc, argv, param[0].a_w.w_float);
-    else if(param[0].a_type == A_SYMBOL) idx= dklmunge_untilstr(argc, argv, param[0].a_w.w_symbol->s_name);
+    if(param[0].a_type == A_FLOAT) idx = lutil_untilf(argc, argv, param[0].a_w.w_float);
+    else if(param[0].a_type == A_SYMBOL) idx= lutil_untilstr(argc, argv, param[0].a_w.w_symbol->s_name);
     outlet_float(x->x_munged, (t_float) idx);
     
 }
@@ -322,7 +255,7 @@ static void dklmunge_rev(t_dklmunge *x, int argc, t_atom * argv)
     int i;
     for(i=0;i<argc;i++)
     {
-        dklmunge_eltset(&argv[argc-i-1],&ret[i]);
+        lutil_eltset(&argv[argc-i-1],&ret[i]);
     };
     dklmunge_output(x, 0, argc, ret);
 
@@ -337,11 +270,11 @@ static void dklmunge_revrot(t_dklmunge *x, int argc, t_atom * argv, t_float f)
     int i;
     for(i=0;i<argc;i++)
     {
-        dklmunge_eltset(&argv[argc-i-1],&temp[i]);
+        lutil_eltset(&argv[argc-i-1],&temp[i]);
     };
 
-    dklmunge_listcopy(&temp[rot], argc-rot, &ret[0], argc-rot);
-   dklmunge_listcopy(&temp[0], rot, &ret[argc-rot], rot);
+    lutil_listcopy(&temp[rot], argc-rot, &ret[0], argc-rot);
+   lutil_listcopy(&temp[0], rot, &ret[argc-rot], rot);
    dklmunge_output(x, 0, argc, ret);
 }
 
@@ -350,11 +283,11 @@ static void dklmunge_fyshuf(t_dklmunge *x, int argc, t_atom * argv)
     t_atom ret[argc];
     int i, j;
     dkrnd_range(x->x_dkrnd, argc-0.5);
-    dklmunge_listcopy(argv, argc, ret, argc);
+    lutil_listcopy(argv, argc, ret, argc);
     for(i=argc-1;i>= 1;i--)
     {
         j = (int)dkrnd_next(x->x_dkrnd);
-        dklmunge_eltswap(&ret[i],&ret[j]); 
+        lutil_eltswap(&ret[i],&ret[j]); 
     };
    dklmunge_output(x, 0,  argc, ret);
 }
@@ -366,8 +299,8 @@ static void dklmunge_rot(t_dklmunge *x, int argc, t_atom * argv, t_float f)
     int leftover = argc-rot;
     //example: argc = 7, rot = 5, put stuff from argv[5] into 0 (5,6) (argc-rot) = 2
     //then argv[0] to argv[4] (5 elts) into dest[2]
-   dklmunge_listcopy(&argv[rot], argc-rot, &ret[0], argc-rot);
-   dklmunge_listcopy(&argv[0], rot, &ret[argc-rot], rot);
+   lutil_listcopy(&argv[rot], argc-rot, &ret[0], argc-rot);
+   lutil_listcopy(&argv[0], rot, &ret[argc-rot], rot);
    dklmunge_output(x, 0, argc, ret);
 }
 
@@ -383,76 +316,23 @@ static void dklmunge_faro(t_dklmunge *x, int argc, t_atom * argv)
     //0->0, 3->1, 1->2, 4->3,2->4,5->5 
     while(i <= mid)
     {
-        dklmunge_eltset(&argv[i], &ret[k]);
+        lutil_eltset(&argv[i], &ret[k]);
         i++; k++;
         if(j < argc)
         {
-            dklmunge_eltset(&argv[j], &ret[k]);
+            lutil_eltset(&argv[j], &ret[k]);
             j++;k++;
         };
     };
 
    dklmunge_output(x, 0, argc, ret);
 }
-static int dklmunge_numdigits(int num)
-{
-    int count = 0;
-    while(num)
-    {
-        num /= 10;
-        ++count;
-    };
-    return count;
-}
 
-static void dklmunge_help_everyn(int argc, t_atom *argv, \
-        t_atom * ret, int _n, int _offset)
-{
-    int n = _n < 1 ? 1 : (_n > argc ? argc : _n);
-    int offset = _offset % n;
-    int sz = (int)(argc/n);
-    int i, idx;
-    for(i=0;i<sz; i++)
-    {   idx = (i * n) + offset;
-        idx = idx > argc ? argc : idx;
-        dklmunge_eltset(&argv[idx], &ret[i]);
-    };
-
-
-}
-
-static double dklmunge_help_sum(int argc, t_atom * argv)
-{
-    int i;
-    double sum = 0;
-    for(i=0;i<argc; i++)
-    {
-        if(argv[i].a_type == A_FLOAT)
-        {
-            sum += argv[i].a_w.w_float;
-        };
-    };
-    return sum;
-}
-
-static double dklmunge_help_prod(int argc, t_atom * argv)
-{
-    int i;
-    double prod = 1;
-    for(i=0;i<argc; i++)
-    {
-        if(argv[i].a_type == A_FLOAT)
-        {
-            prod *= argv[i].a_w.w_float;
-        };
-    };
-    return prod;
-}
 
 static void dklmunge_group(t_dklmunge *x, int argc, t_atom * argv, t_float f)
 {
     int groupnum, outputnum,  lastgroup =1;
-    int argclen = dklmunge_numdigits(argc);
+    int argclen = lutil_numdigits(argc);
     int group = f <= 0 ? 1 : (f >= argc ? argc : (int) f);
     t_atom ret[group + 1];
     char groupname[argclen+1];
@@ -484,7 +364,7 @@ static void dklmunge_group(t_dklmunge *x, int argc, t_atom * argv, t_float f)
             sprintf(groupname, "l%d%c", groupnum,0);
 
             //SETSYMBOL(&ret[0], gensym((char *)groupname));
-            //dklmunge_listcopy(&argv[idx], outputnum -1, &ret[1], outputnum-1);
+            //lutil_listcopy(&argv[idx], outputnum -1, &ret[1], outputnum-1);
             //dklmunge_output(x, 0, outputnum, ret);
             dklmunge_output(x, gensym((char *) groupname), outputnum, &argv[idx]);
             idx -= group;
@@ -496,7 +376,7 @@ static void dklmunge_group(t_dklmunge *x, int argc, t_atom * argv, t_float f)
         {
             sprintf(groupname, "l%d%c", idx,0); 
             //SETSYMBOL(&ret[0], gensym((char *)groupname));
-            //dklmunge_listcopy(&argv[idx], 1, &ret[1], 1);
+            //lutil_listcopy(&argv[idx], 1, &ret[1], 1);
             //dklmunge_output(x, 0, 2, ret);
             dklmunge_output(x, gensym((char *) groupname), 1, &argv[idx]);
         };
@@ -524,28 +404,28 @@ static void dklmunge_everyn(t_dklmunge * x, int argc, t_atom * argv, int paramle
     };
     int sz = (int)argc/n;
     t_atom ret[sz];
-    dklmunge_help_everyn(argc, argv, ret, n, offset);
+    lutil_everyn(argc, argv, ret, n, offset);
     dklmunge_output(x, 0, sz,ret);
 
 }
 
 static void dklmunge_sum(t_dklmunge *x, int argc, t_atom * argv)
 {
-    double sum = dklmunge_help_sum(argc, argv);
+    double sum = lutil_sum(argc, argv);
     outlet_float(x->x_munged, (t_float) sum);
 }
 
 
 static void dklmunge_prod(t_dklmunge *x, int argc, t_atom * argv)
 {
-    double prod = dklmunge_help_prod(argc, argv);
+    double prod = lutil_prod(argc, argv);
     outlet_float(x->x_munged, (t_float) prod);
 }
 
 static void dklmunge_avg(t_dklmunge *x, int argc, t_atom * argv)
 {
 
-    double avg = dklmunge_help_sum(argc, argv);
+    double avg = lutil_sum(argc, argv);
     avg /= (double)argc;
     outlet_float(x->x_munged, (t_float) avg);
 }
@@ -612,8 +492,8 @@ static void dklmunge_rpt1(t_dklmunge * x, int argc, t_atom * argv, int paramlen,
         if(paramlen >= 2){
             t_atom rpts[argsz];
             //get every other elt starting with 2nd elt, these are the rpts
-            dklmunge_help_everyn(paramlen, params, rpts, 2, 1);
-            int sz = (int)dklmunge_help_sum(argsz,rpts); //number of elts we need
+            lutil_everyn(paramlen, params, rpts, 2, 1);
+            int sz = (int)lutil_sum(argsz,rpts); //number of elts we need
             t_atom ret[sz];
             for(i=0; i< argsz; i++)
             {
@@ -626,7 +506,7 @@ static void dklmunge_rpt1(t_dklmunge * x, int argc, t_atom * argv, int paramlen,
                     {
                         for(j=0;j<rpt;j++)
                         {
-                            dklmunge_eltset(&argv[idx], &ret[actidx]);
+                            lutil_eltset(&argv[idx], &ret[actidx]);
                             actidx++;
                         };
                     };
@@ -663,7 +543,7 @@ static void dklmunge_relt(t_dklmunge *x, int argc, t_atom * argv, \
         {
             randelt = (int)dkrnd_next(x->x_dkrnd);
             randelt = randelt < 0 ? 0 : (randelt >= argc ? (argc -1) : randelt);
-            dklmunge_eltset(&argv[randelt], &ret[i]);
+            lutil_eltset(&argv[randelt], &ret[i]);
         };
         dklmunge_output(x, 0, numelts, ret);
     }
@@ -713,7 +593,7 @@ static void dklmunge_relt(t_dklmunge *x, int argc, t_atom * argv, \
                     randelt++;
                 };
             };
-            dklmunge_eltset(&argv[randelt],&ret[i]);
+            lutil_eltset(&argv[randelt],&ret[i]);
         };
         dklmunge_output(x, 0, numelts, ret);
 

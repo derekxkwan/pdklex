@@ -23,3 +23,4 @@ multipurpose list externals for pure data
 - dklgen - list generator
     - randfu - generates a list of uniformly random floats
     - randiu - generates a list of uniformly random ints
+    - rpt1 - given pairs of atoms and times, repeats atoms for a list
