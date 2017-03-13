@@ -21,6 +21,7 @@ multipurpose list externals for pure data
     - prod - multiplies all float args together
 
 - dklgen - list generator
+    - fib - generates fibonacci numbers
     - pell - generates pell numbers
     - randfu - generates a list of uniformly random floats
     - randiu - generates a list of uniformly random ints

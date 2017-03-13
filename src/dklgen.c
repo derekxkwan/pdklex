@@ -9,6 +9,9 @@
 #include "dkrnd.h"
 
 #define ROOT2 1.41421356237309504880168872421
+#define ROOT5 2.23606797749978969640917366873
+#define PHI 1.61803398874989484820458683436563811772031
+
 static t_class *dklgen_class;
 
 typedef enum{
@@ -51,6 +54,7 @@ static void dklgen_setgen(t_dklgen *x, t_symbol * s)
     else if(strcmp(cs, "xrandiu") == 0) x->x_gen = XRANDIU;
     else if(strcmp(cs, "rpt1") == 0) x->x_gen = RPT1;
     else if(strcmp(cs, "pell") == 0) x->x_gen = PELL;
+    else if(strcmp(cs, "fib") == 0) x->x_gen = FIB;
 }
 
 
@@ -232,6 +236,76 @@ static void dklgen_rpt1(t_dklgen *x, int plen, t_atom * p)
     dklgen_output(x, 0, retsz, ret);
 }
 
+static int dklgen_fib_nth(int n)
+{
+    double ret = round(pow(PHI, n)/ROOT5);
+    return (int)ret;
+}
+
+
+static void dklgen_fib(t_dklgen *x, int plen, t_atom *p)
+{
+  int i, num = 1, offset = 0, cur, prev=0, prev2=0;
+    if(plen)
+    {
+        if(p[0].a_type == A_FLOAT)
+        {
+            num = (int)p[0].a_w.w_float;
+            if(plen >= 2)
+            {
+                if(p[1].a_type == A_FLOAT)
+                    offset = (int)p[1].a_w.w_float;
+            };
+        };
+    };
+
+    num = num < 1 ? 1 : num;
+    offset = offset < 0 ? 0 : offset;
+    t_atom ret[num];
+
+    if(offset >= 2)
+    {
+        cur = dklgen_fib_nth(offset);
+        prev = dklgen_fib_nth(offset-1);
+    }
+    else
+    {
+        switch(offset)
+        {   
+            case 0:
+                cur = 0;
+                break;
+            case 1:
+                cur = 1;
+                prev = 0;
+                break;
+            default:
+                break;
+        };
+    };
+   
+
+    //f0 = 0, f1 = 1, f2 = 1, f3 = 2
+    for(i=0; i < num; i++)
+    {
+        SETFLOAT(&ret[i], (t_float)cur);
+        switch(offset+i)
+        {
+            case 0: cur = 1;
+                    prev = 0;
+                    break;
+            default:
+                prev2 = prev;
+                prev = cur;
+                cur = prev2+prev;
+                break;
+        };
+    };
+
+    dklgen_output(x, 0, num, ret);
+
+
+}
 static int dklgen_pell_nth(int n)
 {
     double ret =(pow((1+ROOT2), n)-pow((1-ROOT2),n))/(2*ROOT2);
@@ -239,9 +313,11 @@ static int dklgen_pell_nth(int n)
     return (int)ret;
 }
 
+
+//denoms to the closest rational approx to root 2
 static void dklgen_pell(t_dklgen * x, int plen, t_atom *p)
 {
-    int i, num = 1, offset = 0, cur, prev, prev2;
+    int i, num = 1, offset = 0, cur, prev=0, prev2=0;
     if(plen)
     {
         if(p[0].a_type == A_FLOAT)
@@ -263,56 +339,40 @@ static void dklgen_pell(t_dklgen * x, int plen, t_atom *p)
     //P(n)-2P(n-1)=P(n-2)
     //
     
-    switch(offset)
+    //p0 = 0, p1 = 1, p2 = 2, p3 = 5
+    if(offset >= 2)
     {
-        default:
-        case 4: cur = dklgen_pell_nth(offset);
-                prev = dklgen_pell_nth(offset-1);
-                prev2 = cur-2*prev;
-                break;
-        case 3:
-                prev = dklgen_pell_nth(2);
-                prev2 = 1;
-                cur = prev2 + 2*prev;
-                break;
-        case 2:
-                prev = 1;
-                prev2 = 0;
-                cur = 2;
-                break;
-        case 1:
-                prev = 0;
-                prev2 = 0;
-                cur = 1;
-                break;
-        case 0:
-                cur =0;
-                prev =0;
-                prev2 = 0;
-                break;
-
+      cur = dklgen_pell_nth(offset);
+        prev = dklgen_pell_nth(offset-1);
+    }
+    else
+    {
+        switch(offset)
+        {
+            case 0: cur =0;
+                    break;
+            case 1: cur = 1;
+                    prev = 0;
+                    break;
+            default:
+                    break;
+        };
     };
+
     
     for(i=0; i < num; i++)
     {
         SETFLOAT(&ret[i], (t_float)cur);
-        if(offset + i == 0)
+        switch(offset+i)
         {
-            cur = 1;
-            prev = 0;
-            prev2 = 0;
-        }
-        else if(offset + i == 1)
-        {
-            prev = 1;
-            prev2 = 0;
-            cur = 2;
-        }
-        else
-        {
-            prev2 = prev;
-            prev = cur;
-            cur = prev2+2*prev;
+            case 0: cur = 1;
+                    prev = 0;
+                    break;
+            default:
+                prev2 = prev;
+                prev = cur;
+                cur = prev2+2*prev;
+                break;
         };
     };
 
@@ -335,6 +395,8 @@ static void dklgen_router(t_dklgen * x)
         case PELL: dklgen_pell(x, paramlen, params);
                    break;
                                
+        case FIB: dklgen_fib(x, paramlen, params);
+                   break;
         default: break;
 
     };
