@@ -1,4 +1,4 @@
-#N canvas 998 199 535 718 12;
+#N canvas 996 199 535 718 12;
 #X obj 8 6 cnv 15 500 30 empty empty pdklex 20 12 0 20 -204786 -66577
 0;
 #X obj 8 36 cnv 15 500 30 empty empty dklgen 20 12 0 20 -204800 -66577
@@ -32,7 +32,7 @@
 #X text 109 500 1) list - generated lists;
 #X text 22 322 2) list - gen method and its params;
 #X text 102 347 see dklgen-gens;
-#N canvas 630 330 1156 507 dklgen-gens 0;
+#N canvas 628 330 1156 507 dklgen-gens 0;
 #X text 4 5 MUNGERS:;
 #X text 7 25 none - do nothing;
 #X text 3 284 TO COME:;
@@ -75,6 +75,8 @@
 #X restore 103 6 pd dklgen-randnum;
 #X text 3 157 rpt1(f/s \, f=rptnum pairs) - repeats given atom rptnum
 times;
+#X text 10 181 pell (n \, offset) - generates n pell numbers starting
+with the offset-th;
 #X restore 282 237 pd dklgen-gens;
 #X obj 68 209 pdklex/dklgen;
 #X msg 178 140 list randfu -2 3 20;

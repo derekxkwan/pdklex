@@ -8,6 +8,7 @@
 #include "dkmem.h"
 #include "dkrnd.h"
 
+#define ROOT2 1.41421356237309504880168872421
 static t_class *dklgen_class;
 
 typedef enum{
@@ -17,6 +18,7 @@ typedef enum{
     XRANDFU, //random float, non-repeating uniform
     XRANDIU, //random int, non-repeating uniform
     RPT1, //similar to dklmunge rpt but with specifying atoms
+    PELL,
     COUNT,
     FIB,
     LUCAS,
@@ -48,6 +50,7 @@ static void dklgen_setgen(t_dklgen *x, t_symbol * s)
     else if(strcmp(cs, "xrandfu") == 0) x->x_gen = XRANDFU;
     else if(strcmp(cs, "xrandiu") == 0) x->x_gen = XRANDIU;
     else if(strcmp(cs, "rpt1") == 0) x->x_gen = RPT1;
+    else if(strcmp(cs, "pell") == 0) x->x_gen = PELL;
 }
 
 
@@ -229,6 +232,93 @@ static void dklgen_rpt1(t_dklgen *x, int plen, t_atom * p)
     dklgen_output(x, 0, retsz, ret);
 }
 
+static int dklgen_pell_nth(int n)
+{
+    double ret =(pow((1+ROOT2), n)-pow((1-ROOT2),n))/(2*ROOT2);
+    ret = round(ret);
+    return (int)ret;
+}
+
+static void dklgen_pell(t_dklgen * x, int plen, t_atom *p)
+{
+    int i, num = 1, offset = 0, cur, prev, prev2;
+    if(plen)
+    {
+        if(p[0].a_type == A_FLOAT)
+        {
+            num = (int)p[0].a_w.w_float;
+            if(plen >= 2)
+            {
+                if(p[1].a_type == A_FLOAT)
+                    offset = (int)p[1].a_w.w_float;
+            };
+        };
+    };
+
+    num = num < 1 ? 1 : num;
+    offset = offset < 0 ? 0 : offset;
+    t_atom ret[num];
+    //calculate nth pell number
+    //also 2P(n-1)+P(n-2) = P(n) ->
+    //P(n)-2P(n-1)=P(n-2)
+    //
+    
+    switch(offset)
+    {
+        default:
+        case 4: cur = dklgen_pell_nth(offset);
+                prev = dklgen_pell_nth(offset-1);
+                prev2 = cur-2*prev;
+                break;
+        case 3:
+                prev = dklgen_pell_nth(2);
+                prev2 = 1;
+                cur = prev2 + 2*prev;
+                break;
+        case 2:
+                prev = 1;
+                prev2 = 0;
+                cur = 2;
+                break;
+        case 1:
+                prev = 0;
+                prev2 = 0;
+                cur = 1;
+                break;
+        case 0:
+                cur =0;
+                prev =0;
+                prev2 = 0;
+                break;
+
+    };
+    
+    for(i=0; i < num; i++)
+    {
+        SETFLOAT(&ret[i], (t_float)cur);
+        if(offset + i == 0)
+        {
+            cur = 1;
+            prev = 0;
+            prev2 = 0;
+        }
+        else if(offset + i == 1)
+        {
+            prev = 1;
+            prev2 = 0;
+            cur = 2;
+        }
+        else
+        {
+            prev2 = prev;
+            prev = cur;
+            cur = prev2+2*prev;
+        };
+    };
+
+    dklgen_output(x, 0, num, ret);
+}
+
 static void dklgen_router(t_dklgen * x)
 {
     t_atom * params = x->x_dkparam->m_data;
@@ -242,6 +332,8 @@ static void dklgen_router(t_dklgen * x)
                      break;
         case RPT1: if(paramlen >= 2) dklgen_rpt1(x, paramlen, params);
                        break;
+        case PELL: dklgen_pell(x, paramlen, params);
+                   break;
                                
         default: break;
 

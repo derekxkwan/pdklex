@@ -1,3 +1,4 @@
+pell(n, offset) - generates n pell numbers starting with the offset-th
 randfu - generates a list of uniformly random floats
     - 0 args: 1 elt list with number in [0,1)
     - 1 args: arg0 elt list with numbers in [0,1)
